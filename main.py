@@ -5,6 +5,7 @@ import os
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
@@ -26,6 +27,19 @@ def _key_configurada() -> bool:
 
 
 app = FastAPI(title="Asegúrate SD - Agente Gemini")
+
+# Permitir que las páginas de Asegúrate SD llamen a la API desde el navegador.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://www.aseguratesd.com",
+        "https://aseguratesd.com",
+        "https://promocion.aseguratesd.com",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class ChatRequest(BaseModel):
