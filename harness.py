@@ -1,6 +1,7 @@
 # harness.py
 import os
 import re
+import time
 
 from dotenv import load_dotenv
 from google import genai
@@ -10,7 +11,7 @@ from tools import registrar_lead_cotizacion, derivar_a_asesor_humano
 
 load_dotenv()
 
-MODELO = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+MODELO = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
 
 SYSTEM_PROMPT = """
 Eres Sofía, la asesora virtual experta de Asegúrate SD. Tu propósito es perfilar clientes y guiarlos hacia una cotización formal.
@@ -19,7 +20,7 @@ Eres Sofía, la asesora virtual experta de Asegúrate SD. Tu propósito es perfi
 - REGLAS DE NEGOCIO Y GUARDRAILS:
   1. NUNCA inventes primas o precios definitivos sin cotización oficial.
   2. Si el usuario reporta un siniestro urgente o pide un asesor humano, llama a la función `derivar_a_asesor_humano`.
-  3. Si tienes el nombre, teléfono y ramo de interés, llama a `registrar_lead_cotizacion`.
+  3. En cuanto tengas el nombre, el teléfono y el ramo de interés, llama INMEDIATAMENTE a `registrar_lead_cotizacion`, sin hacer preguntas adicionales. No dejes pasar el lead.
 """
 
 TOOL_FUNCTIONS = {
@@ -30,6 +31,24 @@ TOOL_FUNCTIONS = {
 
 def _cliente() -> genai.Client:
     return genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+
+def _generar(cliente, contents, config, intentos: int = 4):
+    """Genera contenido reintentando ante 503 transitorios (alta demanda)."""
+    ultimo_error = None
+    for i in range(intentos):
+        try:
+            return cliente.models.generate_content(
+                model=MODELO, contents=contents, config=config
+            )
+        except Exception as exc:  # noqa: BLE001
+            ultimo_error = exc
+            texto = str(exc)
+            if ("503" in texto) or ("UNAVAILABLE" in texto) or ("high demand" in texto):
+                time.sleep(2 + i * 3)
+                continue
+            raise
+    raise ultimo_error
 
 
 def post_guardrails_check(bot_response_text: str) -> str:
@@ -67,9 +86,7 @@ def procesar_mensaje_usuario(historial_mensajes: list, nuevo_mensaje: str) -> st
     cliente = _cliente()
 
     # 1. Llamada al modelo
-    response = cliente.models.generate_content(
-        model=MODELO, contents=contents, config=config
-    )
+    response = _generar(cliente, contents, config)
 
     # 2. Manejo de Tool Calls (si el modelo decide ejecutar una acción)
     if response.function_calls:
@@ -102,9 +119,7 @@ def procesar_mensaje_usuario(historial_mensajes: list, nuevo_mensaje: str) -> st
         contents.append(types.Content(role="user", parts=partes_respuesta))
 
         # Segunda llamada con la respuesta de la herramienta
-        follow_up = cliente.models.generate_content(
-            model=MODELO, contents=contents, config=config
-        )
+        follow_up = _generar(cliente, contents, config)
         return post_guardrails_check(follow_up.text)
 
     # 3. Respuesta estándar con validación de Guardrails
