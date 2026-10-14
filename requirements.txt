@@ -1,0 +1,13 @@
+# Runtime dependencies (project script + web API)
+#
+# venv created with `python -m venv --copies --system-site-packages`; the copied
+# interpreter is re-signed ad-hoc to sidestep macOS code-signing ("different Team
+# IDs") on compiled wheels. numpy/pandas/openpyxl come from the DSH base runtime.
+requests>=2.31
+beautifulsoup4>=4.12
+chardet==5.2.0
+google-genai>=1.0
+fastapi>=0.115
+uvicorn>=0.30
+pydantic>=2.7
+python-dotenv>=1.0

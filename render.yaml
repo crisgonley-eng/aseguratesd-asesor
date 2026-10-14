@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: aseguratesd-asesor
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
+      - key: ASESOR_WHATSAPP_NUMERO
+        value: "+573004880299"
+      - key: WHATSAPP_TO
+        value: "573004880299"
+      - key: WHATSAPP_API_VERSION
+        value: v21.0
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
