@@ -13,20 +13,36 @@ def _notificar_whatsapp(nombre: str, telefono: str, ramo: str, detalles: str) ->
     """
     token = os.getenv("WHATSAPP_TOKEN", "").strip()
     phone_number_id = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "").strip()
-    to = os.getenv("WHATSAPP_TO", "573004880299").strip()
-    version = os.getenv("WHATSAPP_API_VERSION", "v21.0").strip()
+    to = os.getenv("WHATSAPP_TO", "573043501762").strip()
+    version = os.getenv("WHATSAPP_API_VERSION", "v25.0").strip()
+    template = os.getenv("WHATSAPP_TEMPLATE_NAME", "jaspers_market_order_confirmation_v1").strip()
+    lang = os.getenv("WHATSAPP_TEMPLATE_LANG", "en_US").strip()
 
     if not token or not phone_number_id:
         return {"enviado": False, "motivo": "sin_credenciales"}
 
-    cuerpo = (
-        f"✅ *Nuevo lead — Asegúrate SD*\n"
-        f"👤 {nombre}\n"
-        f"📱 {telefono}\n"
-        f"🛡 {ramo}\n"
-        f"📝 {detalles}"
-    )
+    # El número de prueba de Meta solo entrega MENSAJES TIPO PLANTILLA (template),
+    # no texto libre. Por eso se usa una plantilla.
     url = f"https://graph.facebook.com/{version}/{phone_number_id}/messages"
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": to,
+        "type": "template",
+        "template": {
+            "name": template,
+            "language": {"code": lang},
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {"type": "text", "text": nombre},
+                        {"type": "text", "text": ramo},
+                        {"type": "text", "text": telefono},
+                    ],
+                }
+            ],
+        },
+    }
     try:
         resp = requests.post(
             url,
@@ -34,12 +50,7 @@ def _notificar_whatsapp(nombre: str, telefono: str, ramo: str, detalles: str) ->
                 "Authorization": f"Bearer {token}",
                 "Content-Type": "application/json",
             },
-            json={
-                "messaging_product": "whatsapp",
-                "to": to,
-                "type": "text",
-                "text": {"body": cuerpo},
-            },
+            json=payload,
             timeout=15,
         )
         ok = resp.status_code == 200
