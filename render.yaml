@@ -9,13 +9,13 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL
-        value: gemini-3.8-flash
+        value: gemini-3.6-flash
       - key: ASESOR_WHATSAPP_NUMERO
         value: "+573004880299"
       - key: WHATSAPP_TO
-        value: "573004880299"
+        value: "573043501762"
       - key: WHATSAPP_API_VERSION
-        value: v21.0
+        value: v25.0
       - key: WHATSAPP_TOKEN
         sync: false
       - key: WHATSAPP_PHONE_NUMBER_ID
