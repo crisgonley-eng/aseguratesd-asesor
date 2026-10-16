@@ -16,6 +16,10 @@ services:
         value: "573043501762"
       - key: WHATSAPP_API_VERSION
         value: v25.0
+      - key: WHATSAPP_TEMPLATE_NAME
+        value: nuevo_lead_notificacion
+      - key: WHATSAPP_TEMPLATE_LANG
+        value: es
       - key: WHATSAPP_TOKEN
         sync: false
       - key: WHATSAPP_PHONE_NUMBER_ID
