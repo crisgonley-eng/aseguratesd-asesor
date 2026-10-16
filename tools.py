@@ -15,8 +15,8 @@ def _notificar_whatsapp(nombre: str, telefono: str, ramo: str, detalles: str) ->
     phone_number_id = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "").strip()
     to = os.getenv("WHATSAPP_TO", "573043501762").strip()
     version = os.getenv("WHATSAPP_API_VERSION", "v25.0").strip()
-    template = os.getenv("WHATSAPP_TEMPLATE_NAME", "nuevo_lead_notificacion").strip()
-    lang = os.getenv("WHATSAPP_TEMPLATE_LANG", "es_EC").strip()
+    template = os.getenv("WHATSAPP_TEMPLATE_NAME", "jaspers_market_order_confirmation_v1").strip()
+    lang = os.getenv("WHATSAPP_TEMPLATE_LANG", "en_US").strip()
 
     if not token or not phone_number_id:
         return {"enviado": False, "motivo": "sin_credenciales"}
